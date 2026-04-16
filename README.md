@@ -48,3 +48,18 @@ Analyze the Yahoo Finance 2026 dataset to build an Alpha Scoring model based on 
 2. **Leveraged Effect:** Detects stocks with returns > 100% or < -100%. This is a crucial insight to warn investors about the risks of derivative/3x leveraged products
 3. **Capital Structure Risk Warning:** Detects companies with negative equity or extremely high ROE due to excessive buybacks. This helps filter out "artificially healthy" companies when running the Scoring model
 4. **Currency Bias:** Recognizing that absolute price comparisons between markets are meaningless, it suggests using Return (%) or Market Cap (USD) as a common benchmark
+
+---
+
+# EDA & Data Cleaning
+Identify and address 7 key issues in the dataset
+
+| Key issue | Severity level |
+| :--- | :--- |
+| **Missing Values** | 🔴 Serious |
+| **OUTLIERS** | 🔴 Serious |
+| **Incorrect Data Type** | 🟠 Important |
+| **Mix Currencies** | 🟠 Important |
+| **Return 1Y has a negative value below -100% (Impossible)** | 🟡 Moderate |
+| **NON-EQUITY no sector (NULL 100%)** | 🟠 Important |
+| **Extremely Negative Profit Margins & Invalid ROE** | 🟠 Important |
