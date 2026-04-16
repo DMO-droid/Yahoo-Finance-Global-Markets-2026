@@ -1,8 +1,5 @@
 """
 EDA & Data Cleaning — Yahoo Finance Global Markets 2026
-=======================================================
-Phát hiện và xử lý 7 vấn đề chính trong bộ dữ liệu.
-Chạy: python eda_yahoo_finance.py
 """
 
 import pandas as pd
@@ -10,20 +7,17 @@ import numpy as np
 import warnings
 warnings.filterwarnings('ignore')
 
-# ============================================================
+
 # LOAD DATA
-# ============================================================
 df = pd.read_csv('yahoo_finance_global_markets_2026.csv')
+df.head()
 print(f"[INFO] Raw data: {df.shape[0]} rows × {df.shape[1]} cols\n")
 
 
-# ============================================================
-# VẤN ĐỀ 1 — MISSING VALUES CÓ CẤU TRÚC (KHÔNG PHẢI LỖI)
-# ============================================================
-# LÝ DO: ~45–68% null ở cột cơ bản (PE, ROE, debtToEquity...)
-# KHÔNG phải lỗi — CRYPTO, FOREX, COMMODITIES, INDICES không có
-# chỉ số tài chính doanh nghiệp. Điền 0 hay mean sẽ SAI hoàn toàn.
-# GIẢI PHÁP: Tách thành 2 tập phân tích riêng biệt.
+---
+# Issues 1 — MISSING VALUES
+# ~45–68% null ở cột cơ bản (PE, ROE, debtToEquity...) Không phải lỗi — CRYPTO, FOREX, COMMODITIES, INDICES không có chỉ số tài chính doanh nghiệp. Không thể sử dụng phương pháp điền MEAN or 0
+# Tách thành 2 tập phân tích riêng biệt.
 
 EQUITY_CLASSES   = ['US_MEGA', 'US_MID', 'INTL']
 NONEQUITY_CLASSES = ['CRYPTO', 'ETF', 'FOREX', 'COMMODITIES', 'INDICES']
@@ -31,9 +25,6 @@ NONEQUITY_CLASSES = ['CRYPTO', 'ETF', 'FOREX', 'COMMODITIES', 'INDICES']
 df_equity    = df[df['asset_class'].isin(EQUITY_CLASSES)].copy()
 df_nonequity = df[df['asset_class'].isin(NONEQUITY_CLASSES)].copy()
 
-print("=" * 60)
-print("VẤN ĐỀ 1 — MISSING VALUES CÓ CẤU TRÚC")
-print("=" * 60)
 print(f"  Equity (có fundamentals):     {len(df_equity):3d} rows")
 print(f"  Non-equity (không có):        {len(df_nonequity):3d} rows")
 
@@ -55,21 +46,27 @@ for col in FILL_MEDIAN_COLS:
 
 print(f"\n  [FIX] 'beta' điền median theo sector. Còn lại giữ NaN.")
 
+'''
+  Equity (có fundamentals):     247 rows
+  Non-equity (không có):        204 rows
 
-# ============================================================
-# VẤN ĐỀ 2 — OUTLIERS CỰC ĐOAN TRONG CHỈ SỐ ĐỊNH GIÁ
-# ============================================================
+  Null % trong equity sau khi tách:
+trailingPE        21.1
+returnOnEquity     3.6
+debtToEquity      15.4
+revenueGrowth      1.6
+beta               0.8
+
+  [FIX] 'beta' điền median theo sector. Còn lại giữ NaN.
+'''
+
+# Issues 2 — OUTLIERS
 # LÝ DO:
 #   - trailingPE = 3739 (SHY — ETF trái phiếu ngắn hạn, PE vô nghĩa)
 #   - forwardPE = -4329 (TLT — ETF bond, EPS âm làm PE âm)
 #   - priceToBook = -283 (DOCN — accumulated deficit > equity, kỹ thuật hợp lệ
 #     nhưng gây nhiễu nếu dùng P/B để filter)
-# GIẢI PHÁP: Winsorize (clip) theo ngưỡng kinh tế học hợp lý.
-# KHÔNG xóa dòng — mất dữ liệu giá, kỹ thuật vẫn dùng được.
-
-print("\n" + "=" * 60)
-print("VẤN ĐỀ 2 — OUTLIERS TRONG CHỈ SỐ ĐỊNH GIÁ")
-print("=" * 60)
+# Winsorize (clip) theo ngưỡng kinh tế học hợp lý. Không xóa dòng — mất dữ liệu giá, kỹ thuật vẫn dùng được.
 
 outlier_rules = {
     'trailingPE':  (0, 500),    # PE > 500: vô nghĩa kinh tế với equity
@@ -93,18 +90,23 @@ df_equity['flag_negative_equity'] = (df_equity['priceToBook_raw'] < 0).astype(in
 neg_eq_count = df_equity['flag_negative_equity'].sum()
 print(f"\n  [FLAG] {neg_eq_count} công ty có negative book equity (flag_negative_equity=1)")
 print(f"  Tickers: {df_equity[df_equity['flag_negative_equity']==1]['ticker'].tolist()}")
+---
+'''
+trailingPE: clip [0, 500] — 53 giá trị bị winsorize
+forwardPE: clip [-50, 300] — 2 giá trị bị winsorize
+priceToBook: clip [-50, 100] — 11 giá trị bị winsorize
+debtToEquity: clip [0, 500] — 45 giá trị bị winsorize
+returnOnEquity: clip [-2, 5] — 13 giá trị bị winsorize
+
+[FLAG] 10 công ty có negative book equity (flag_negative_equity=1)
+Tickers: ['ABBV', 'BKNG', 'BOX', 'DOCN', 'DOMO', 'EVGO', 'MCD', 'MCK', 'MO', 'ORLY']
+'''
 
 
-# ============================================================
-# VẤN ĐỀ 3 — KIỂU DỮ LIỆU SAI: CỘT NGÀY LÀ STRING
-# ============================================================
-# LÝ DO: exDividendDate, lastFiscalYearEnd, price_date là object (string).
-# Format: 'DD/MM/YYYY' (không phải ISO). Không thể tính khoảng cách thời gian,
-# sort theo thời gian, hay lọc "cổ tức sau ngày X" nếu giữ nguyên string.
 
-print("\n" + "=" * 60)
-print("VẤN ĐỀ 3 — KIỂU DỮ LIỆU SAI: CỘT NGÀY")
-print("=" * 60)
+# Issues 3 — Incorrect Data Type
+# exDividendDate, lastFiscalYearEnd, price_date là object (string)
+# Format: 'DD/MM/YYYY' (không phải ISO). Không thể tính khoảng cách thời gian. Sort theo thời gian, hay lọc "cổ tức sau ngày X" nếu giữ nguyên string.
 
 date_cols = ['exDividendDate', 'lastFiscalYearEnd', 'mostRecentQuarter',
              'nextFiscalYearEnd', 'price_date']
@@ -123,22 +125,23 @@ for col in date_cols:
         df_nonequity[col] = pd.to_datetime(df_nonequity[col], format='%d/%m/%Y', errors='coerce')
 
 print("\n  [FIX] Tất cả cột ngày đã convert sang datetime64[ns]")
-print(f"  Ví dụ price_date: {df['price_date'].dropna().head(3).tolist()}")
+
+'''
+exDividendDate: → datetime64, 299 NaT (gốc là NaN hoặc format lỗi)
+lastFiscalYearEnd: → datetime64, 205 NaT (gốc là NaN hoặc format lỗi)
+mostRecentQuarter: → datetime64, 205 NaT (gốc là NaN hoặc format lỗi)
+nextFiscalYearEnd: → datetime64, 205 NaT (gốc là NaN hoặc format lỗi)
+price_date: → datetime64, 2 NaT (gốc là NaN hoặc format lỗi)
+
+[FIX] Tất cả cột ngày đã convert sang datetime64[ns]
+'''
 
 
-# ============================================================
-# VẤN ĐỀ 4 — ĐA TIỀN TỆ: KHÔNG THỂ SO SÁNH GIÁ TRỰC TIẾP
-# ============================================================
-# LÝ DO: KRW (Korea), INR (India), JPY (Japan) có đơn vị giá khác nhau
-# hoàn toàn. Samsung giá 186,200 KRW nhưng không có nghĩa đắt hơn Apple
-# giá $255. Nếu dùng currentPrice để vẽ histogram hay so sánh → vô nghĩa.
-# GIẢI PHÁP: Thêm cột market_cap_usd (đã có sẵn) làm chuẩn so sánh.
-# Với các phân tích cần giá, dùng return (%) thay vì price tuyệt đối.
+# Issues 4 — Mix Currencies
+# LÝ DO: KRW (Korea), INR (India), JPY (Japan) có đơn vị giá khác nhau hoàn toàn. Samsung giá 186,200 KRW nhưng không có nghĩa đắt hơn Apple giá $255. Nếu dùng currentPrice để vẽ histogram hay so sánh → vô nghĩa.
+# Thêm cột market_cap_usd (đã có sẵn) làm chuẩn so sánh. Với các phân tích cần giá, dùng return (%) thay vì price tuyệt đối.
 
-print("\n" + "=" * 60)
-print("VẤN ĐỀ 4 — ĐA TIỀN TỆ")
-print("=" * 60)
-print("  Phân phối tiền tệ:")
+
 print(df['currency'].value_counts().to_string())
 
 # Tạo flag để cảnh báo khi dùng giá tuyệt đối
@@ -155,20 +158,38 @@ df.loc[df['currency'] == 'USX', 'currentPrice'] = df.loc[
     df['currency'] == 'USX', 'currentPrice'] / 100
 df.loc[df['currency'] == 'USX', 'currency'] = 'USD'
 
+'''
+currency
+USD    420
+AUD      6
+EUR      5
+KRW      4
+CHF      3
+INR      2
+NGN      1
+BRL      1
+GBP      1
+HKD      1
+IDR      1
+MXN      1
+JPY      1
+SGD      1
+ILS      1
+TWD      1
 
-# ============================================================
-# VẤN ĐỀ 5 — RETURN 1Y CÓ GIÁ TRỊ ÂM DƯỚI -100% (BẤT KHẢ THI)
-# ============================================================
-# LÝ DO: return_1y_pct = -133%, -177%, -236% là bất khả thi với cổ phiếu
-# thông thường (max loss = -100%). Nguyên nhân: leveraged ETF (SOXS/SOXL)
-# dùng đòn bẩy 3x tính NAV, hoặc crypto tính theo giá gốc rất thấp.
+  [WARN] 31 tài sản NON-USD — không so sánh giá trực tiếp
+  Dùng 'return_*_pct' hoặc 'market_cap_usd' cho cross-currency analysis
+
+  [FIX] USX (cents) tickers: []
+  → currentPrice của các tickers này cần ÷ 100 nếu so với USD
+'''
+
+
+
+# Issues 5 Return 1Y has a negative value below -100% (Impossible)
+# return_1y_pct = -133%, -177%, -236% là bất khả thi với cổ phiếu thông thường (max loss = -100%). Nguyên nhân: leveraged ETF (SOXS/SOXL) dùng đòn bẩy 3x tính NAV, hoặc crypto tính theo giá gốc rất thấp.
 # SOXS = -236%, SOXL = +236% (đối nghịch nhau, đúng về bản chất đòn bẩy).
-# GIẢI PHÁP: Không xóa — đây là dữ liệu hợp lệ cho leveraged products.
-# Thêm flag và tách ra khi phân tích normal distribution của returns.
-
-print("\n" + "=" * 60)
-print("VẤN ĐỀ 5 — RETURN BẤT THƯỜNG (LEVERAGED/CRYPTO)")
-print("=" * 60)
+# GIẢI PHÁP: Không xóa — đây là dữ liệu hợp lệ cho leveraged products. Thêm flag và tách ra khi phân tích normal distribution của returns.
 
 extreme_return = df[df['return_1y_pct'].abs() > 100].copy()
 print(f"  Số tài sản có |return_1y| > 100%: {len(extreme_return)}")
@@ -178,18 +199,42 @@ df['flag_leveraged_or_extreme'] = (df['return_1y_pct'].abs() > 100).astype(int)
 print(f"\n  [FLAG] Đã tạo 'flag_leveraged_or_extreme' — loại khỏi phân tích return thông thường")
 print(f"  [TIP] Khi vẽ phân phối return, dùng: df[df['flag_leveraged_or_extreme']==0]")
 
+'''
+Số tài sản có |return_1y| > 100%: 24
+        ticker  asset_class  return_1y_pct
+0    000660.KS         INTL         187.40
+1    005930.KS         INTL         138.61
+21        AMAT      US_MEGA         108.88
+22         AMD      US_MEGA         115.19
+47     BAL-USD       CRYPTO        -133.91
+76         CAT      US_MEGA         100.87
+122       DOCN       US_MID         140.39
+130       EDIT       US_MID         144.08
+138    EOS-USD       CRYPTO        -177.16
+156   FLOW-USD       CRYPTO        -154.14
+160       FSLY       US_MID         234.44
+216       KLAC      US_MEGA         104.17
+219       LABD          ETF        -168.83
+220       LABU          ETF         173.01
+227       LRCX      US_MEGA         139.64
+266       NTLA       US_MID         123.45
+273     OP-USD       CRYPTO        -114.82
+294       PRME       US_MID         152.30
+330       SI=F  COMMODITIES         109.96
+333        SLV          ETF         105.71
+343       SOXL          ETF         236.52
+344       SOXS          ETF        -236.17
+362  THETA-USD       CRYPTO        -103.48
+364    TIA-USD       CRYPTO        -148.75
 
-# ============================================================
-# VẤN ĐỀ 6 — NON-EQUITY KHÔNG CÓ SECTOR (NULL 100%)
-# ============================================================
-# LÝ DO: ETF, FOREX, COMMODITIES, INDICES không có sector vì đây
-# không phải cổ phiếu đơn lẻ. Nếu group-by sector sẽ bỏ sót 161 rows.
-# GIẢI PHÁP: Điền sector = asset_class cho non-equity để giữ trong
-# phân tích tổng quan, nhưng KHÔNG dùng cho phân tích sector rotation.
+  [FLAG] Đã tạo 'flag_leveraged_or_extreme' — loại khỏi phân tích return thông thường
+  [TIP] Khi vẽ phân phối return, dùng: df[df['flag_leveraged_or_extreme']==0]
+'''
 
-print("\n" + "=" * 60)
-print("VẤN ĐỀ 6 — SECTOR NULL VỚI NON-EQUITY")
-print("=" * 60)
+
+# Issues 6 — NON-EQUITY NO SECTOR (NULL 100%)
+# ETF, FOREX, COMMODITIES, INDICES không có sector vì đây không phải cổ phiếu đơn lẻ. Nếu group-by sector sẽ bỏ sót 161 rows.
+# Điền sector = asset_class cho non-equity để giữ trong phân tích tổng quan, nhưng KHÔNG dùng cho phân tích sector rotation.
 
 print(f"  Sector null trong non-equity: {df_nonequity['sector'].isnull().sum()}/{len(df_nonequity)}")
 
@@ -207,19 +252,23 @@ print("  [FIX] sector điền từ asset_class cho non-equity")
 print(f"  [WARN] Không dùng sector này cho sector rotation analysis")
 print(f"  Distribution sau fix:\n{df_nonequity['sector'].value_counts().to_string()}")
 
+'''
+Sector null trong non-equity: 204/204
+  [FIX] sector điền từ asset_class cho non-equity
+  [WARN] Không dùng sector này cho sector rotation analysis
+  Distribution sau fix:
+sector
+ETF            87
+Crypto         43
+Forex          30
+Indices        26
+Commodities    18
+'''
 
-# ============================================================
-# VẤN ĐỀ 7 — PROFIT MARGINS ÂM CỰC ĐOAN & ROE KHÔNG HỢP LỆ
-# ============================================================
-# LÝ DO: profitMargins = -1.99 (thua lỗ nặng, có thể hợp lệ nhưng
-# cần kiểm tra). ROE = 6225% (ABBV) do shareholders' equity rất nhỏ
-# sau buyback khổng lồ — kỹ thuật hợp lệ nhưng gây bias nếu dùng
-# ROE để so sánh toàn thị trường.
-# GIẢI PHÁP: Flag các cases đặc biệt, không xóa.
 
-print("\n" + "=" * 60)
-print("VẤN ĐỀ 7 — MARGIN VÀ ROE BẤT THƯỜNG")
-print("=" * 60)
+# Issues 7 — Extremely Negative Profit Margins & Invalid ROE
+# profitMargins = -1.99 (thua lỗ nặng, có thể hợp lệ nhưng cần kiểm tra). ROE = 6225% (ABBV) do shareholders' equity rất nhỏ sau buyback khổng lồ — kỹ thuật hợp lệ nhưng gây bias nếu dùng ROE để so sánh toàn thị trường.
+# Flag các cases đặc biệt, không xóa
 
 # profitMargins < -50% = lỗ nặng, ảnh hưởng quality_score
 extreme_loss = df_equity[df_equity['profitMargins'] < -0.5]
@@ -257,6 +306,28 @@ for f in flags:
 print("\n  Cột raw (giữ bản gốc trước winsorize):")
 raw_cols = [c for c in df_equity.columns if c.endswith('_raw')]
 print(f"  {raw_cols}")
+
+'''
+Công ty lỗ nặng (margin < -50%): 7
+    ticker             sector  profitMargins  returnOnEquity
+53    BEAM         Healthcare       -0.57242        -0.08113
+59    BLNK        Industrials       -0.80550        -0.91036
+84    CHPT  Consumer Cyclical       -0.53547        -2.00000
+202   INVZ  Consumer Cyclical       -1.23064        -0.86558
+221   LCID  Consumer Cyclical       -1.99296        -0.66020
+307   RIVN  Consumer Cyclical       -0.67681        -0.65005
+402   WOLF         Technology       -0.91641        -1.37040
+
+  ROE > 200% (extreme buyback / tiny equity): 4
+    ticker  returnOnEquity  flag_negative_equity
+5     ABBV         5.00000                     1
+29     APP         2.12945                     0
+88      CL         4.97470                     0
+230     MA         2.09915                     0
+
+  [FLAG] 'flag_extreme_margins' — cẩn thận khi dùng trong scoring
+'''
+
 
 # Lưu output
 df_equity.to_csv('df_equity_cleaned.csv', index=False)
