@@ -58,8 +58,8 @@ Identify and address 7 key issues in the dataset
 | :--- | :--- |
 | **Missing Values** | 🔴 Serious |
 | **OUTLIERS** | 🔴 Serious |
-| **Incorrect Data Type** | 🟠 Important |
+| **Temporal Data Standardization** | 🟠 Important |
 | **Mix Currencies** | 🟠 Important |
-| **Return 1Y has a negative value below -100% (Impossible)** | 🟡 Moderate |
-| **NON-EQUITY no sector (NULL 100%)** | 🟠 Important |
+| **Identification of Leveraged & Extreme Returns** | 🟡 Moderate |
+| **NON-EQUITY no sector** | 🟠 Important |
 | **Extremely Negative Profit Margins & Invalid ROE** | 🟠 Important |
