@@ -4,8 +4,8 @@
 Analyze the Yahoo Finance 2026 dataset to build an Alpha Scoring model based on the factors of Value, Quality and Momentum
 
 ## 🔥 Dataset Overview
-**Name:** yahoo_finance_global_markets_2026
-**Link:** https://www.kaggle.com/datasets/kanchana1990/yahoo-finance-global-markets-intelligence-2026/data
+* **Name:** yahoo_finance_global_markets_2026
+* **Link:** https://www.kaggle.com/datasets/kanchana1990/yahoo-finance-global-markets-intelligence-2026/data
 
 | Attribute | Value |
 | :--- | :--- |
