@@ -15,9 +15,7 @@ print(f"[INFO] Raw data: {df.shape[0]} rows × {df.shape[1]} cols\n")
 
 
 ---
-# Issues 1 — MISSING VALUES
-# ~45–68% null ở cột cơ bản (PE, ROE, debtToEquity...) Không phải lỗi — CRYPTO, FOREX, COMMODITIES, INDICES không có chỉ số tài chính doanh nghiệp. Không thể sử dụng phương pháp điền MEAN or 0
-# Tách thành 2 tập phân tích riêng biệt.
+# Issues 1 - Structural Missing Values Management
 
 EQUITY_CLASSES   = ['US_MEGA', 'US_MID', 'INTL']
 NONEQUITY_CLASSES = ['CRYPTO', 'ETF', 'FOREX', 'COMMODITIES', 'INDICES']
@@ -35,7 +33,7 @@ print("\n  Null % trong equity sau khi tách:")
 print(equity_null.round(1).to_string())
 
 # Chỉ với equity: điền median theo sector cho các cột kỹ thuật nhỏ
-# (không điền cột fundamental quan trọng — giữ NaN để biết thiếu)
+# (Không điền cột fundamental quan trọng — giữ NaN để biết thiếu)
 FILL_MEDIAN_COLS = ['beta']
 for col in FILL_MEDIAN_COLS:
     df_equity[col] = df_equity.groupby('sector')[col].transform(
@@ -60,13 +58,7 @@ beta               0.8
   [FIX] 'beta' điền median theo sector. Còn lại giữ NaN.
 '''
 
-# Issues 2 — OUTLIERS
-# LÝ DO:
-#   - trailingPE = 3739 (SHY — ETF trái phiếu ngắn hạn, PE vô nghĩa)
-#   - forwardPE = -4329 (TLT — ETF bond, EPS âm làm PE âm)
-#   - priceToBook = -283 (DOCN — accumulated deficit > equity, kỹ thuật hợp lệ
-#     nhưng gây nhiễu nếu dùng P/B để filter)
-# Winsorize (clip) theo ngưỡng kinh tế học hợp lý. Không xóa dòng — mất dữ liệu giá, kỹ thuật vẫn dùng được.
+# Issues 2 - Economic Winsorization of Outliers
 
 outlier_rules = {
     'trailingPE':  (0, 500),    # PE > 500: vô nghĩa kinh tế với equity
@@ -102,11 +94,7 @@ returnOnEquity: clip [-2, 5] — 13 giá trị bị winsorize
 Tickers: ['ABBV', 'BKNG', 'BOX', 'DOCN', 'DOMO', 'EVGO', 'MCD', 'MCK', 'MO', 'ORLY']
 '''
 
-
-
-# Issues 3 — Incorrect Data Type
-# exDividendDate, lastFiscalYearEnd, price_date là object (string)
-# Format: 'DD/MM/YYYY' (không phải ISO). Không thể tính khoảng cách thời gian. Sort theo thời gian, hay lọc "cổ tức sau ngày X" nếu giữ nguyên string.
+# Issues 3 - Temporal Data Standardization
 
 date_cols = ['exDividendDate', 'lastFiscalYearEnd', 'mostRecentQuarter',
              'nextFiscalYearEnd', 'price_date']
@@ -137,10 +125,7 @@ price_date: → datetime64, 2 NaT (gốc là NaN hoặc format lỗi)
 '''
 
 
-# Issues 4 — Mix Currencies
-# LÝ DO: KRW (Korea), INR (India), JPY (Japan) có đơn vị giá khác nhau hoàn toàn. Samsung giá 186,200 KRW nhưng không có nghĩa đắt hơn Apple giá $255. Nếu dùng currentPrice để vẽ histogram hay so sánh → vô nghĩa.
-# Thêm cột market_cap_usd (đã có sẵn) làm chuẩn so sánh. Với các phân tích cần giá, dùng return (%) thay vì price tuyệt đối.
-
+# Issues 4 - Mix Currencies
 
 print(df['currency'].value_counts().to_string())
 
@@ -186,10 +171,7 @@ TWD      1
 
 
 
-# Issues 5 Return 1Y has a negative value below -100% (Impossible)
-# return_1y_pct = -133%, -177%, -236% là bất khả thi với cổ phiếu thông thường (max loss = -100%). Nguyên nhân: leveraged ETF (SOXS/SOXL) dùng đòn bẩy 3x tính NAV, hoặc crypto tính theo giá gốc rất thấp.
-# SOXS = -236%, SOXL = +236% (đối nghịch nhau, đúng về bản chất đòn bẩy).
-# GIẢI PHÁP: Không xóa — đây là dữ liệu hợp lệ cho leveraged products. Thêm flag và tách ra khi phân tích normal distribution của returns.
+# Issues 5 - Identification of Leveraged & Extreme Returns
 
 extreme_return = df[df['return_1y_pct'].abs() > 100].copy()
 print(f"  Số tài sản có |return_1y| > 100%: {len(extreme_return)}")
@@ -232,9 +214,7 @@ Số tài sản có |return_1y| > 100%: 24
 '''
 
 
-# Issues 6 — NON-EQUITY NO SECTOR (NULL 100%)
-# ETF, FOREX, COMMODITIES, INDICES không có sector vì đây không phải cổ phiếu đơn lẻ. Nếu group-by sector sẽ bỏ sót 161 rows.
-# Điền sector = asset_class cho non-equity để giữ trong phân tích tổng quan, nhưng KHÔNG dùng cho phân tích sector rotation.
+# Issues 6 - NON-EQUITY no sector
 
 print(f"  Sector null trong non-equity: {df_nonequity['sector'].isnull().sum()}/{len(df_nonequity)}")
 
@@ -266,9 +246,7 @@ Commodities    18
 '''
 
 
-# Issues 7 — Extremely Negative Profit Margins & Invalid ROE
-# profitMargins = -1.99 (thua lỗ nặng, có thể hợp lệ nhưng cần kiểm tra). ROE = 6225% (ABBV) do shareholders' equity rất nhỏ sau buyback khổng lồ — kỹ thuật hợp lệ nhưng gây bias nếu dùng ROE để so sánh toàn thị trường.
-# Flag các cases đặc biệt, không xóa
+# Issues 7 - Extremely Negative Profit Margins & Invalid ROE
 
 # profitMargins < -50% = lỗ nặng, ảnh hưởng quality_score
 extreme_loss = df_equity[df_equity['profitMargins'] < -0.5]
@@ -289,9 +267,8 @@ df_equity['flag_extreme_margins'] = (
 print(f"\n  [FLAG] 'flag_extreme_margins' — cẩn thận khi dùng trong scoring")
 
 
-# ============================================================
+
 # SUMMARY REPORT
-# ============================================================
 print("\n" + "=" * 60)
 print("TỔNG KẾT SAU CLEANING")
 print("=" * 60)
