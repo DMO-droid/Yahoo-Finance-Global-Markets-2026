@@ -1,11 +1,11 @@
-# Final Report — Yahoo Finance Global Markets 2026
+# Final Report - Yahoo Finance Global Markets 2026
 ## Investment Screener & Composite Alpha Scoring System
 
 ---
 
 ## 1. Objective
 
-Build a fair, bias-free composite scoring model to rank 451 global assets and filter equities into 5 actionable investment strategies. The original `composite_score` was heavily biased toward momentum — this report documents the redesigned model and its validation.
+Build a fair, bias-free composite scoring model to rank 451 global assets and filter equities into 5 actionable investment strategies. The original `composite_score` was heavily biased toward momentum - this report documents the redesigned model and its validation.
 
 ---
 
@@ -36,7 +36,7 @@ All metrics are normalized via **percentile rank (0–100)** before weighted ave
 
 ---
 
-## 3. Validation — Score vs. Return Correlation
+## 3. Validation - Score vs. Return Correlation
 
 The redesigned composite score was validated against realized 1-year returns:
 
@@ -53,37 +53,37 @@ The scatter plot (`composite_vs_return.png`) shows a positive trend line across 
 
 The sector heatmap (`sector_heatmap.png`) reveals:
 
-- **Technology** leads on Momentum and Composite score — driven by AI/semiconductor tailwinds
+- **Technology** leads on Momentum and Composite score - driven by AI/semiconductor tailwinds
 - **Healthcare** shows strong Quality scores (high ROE, stable margins) but moderate Momentum
 - **Energy** has high Value scores (low P/E, high FCF yield) but weak Momentum
-- **Communication Services** is mixed — mega-caps (GOOGL, META) pull up Quality; smaller names drag Momentum
+- **Communication Services** is mixed - mega-caps (GOOGL, META) pull up Quality; smaller names drag Momentum
 - **Financials** score well on Value but carry elevated D/E ratios that suppress Quality
 
 ---
 
 ## 5. Five Investment Strategies
 
-### A — Quality Value (Buffett-style)
+### A - Quality Value (Buffett-style)
 **Criteria:** Quality Index ≥ 65th percentile AND Value Index ≥ 55th percentile AND Composite ≥ 45
 
 Targets high-quality businesses trading at a discount. Suitable for long-term, low-turnover portfolios. Historically outperforms in late-cycle and bear markets.
 
-### B — Momentum Breakout
+### B - Momentum Breakout
 **Criteria:** Momentum Index ≥ 70th percentile AND Technical score ≥ 3/5 AND Golden Cross = 1
 
 Targets stocks with strong price velocity confirmed by technical signals. Higher turnover strategy. Performs best in trending bull markets.
 
-### C — GARP (Growth at a Reasonable Price)
+### C - GARP (Growth at a Reasonable Price)
 **Criteria:** Revenue growth > 10% AND Trailing P/E < 50 AND Quality ≥ 50th pct AND Momentum ≥ 40th pct
 
 Balances growth and valuation. Avoids both deep value traps and overpriced growth stocks.
 
-### D — Dividend Stability
+### D - Dividend Stability
 **Criteria:** Dividend yield > 2% AND Annualized volatility < 30% AND P/E < 30 AND Quality ≥ 45th pct
 
 Targets income-generating stocks with sustainable payouts. Low volatility filter reduces drawdown risk.
 
-### E — Contrarian Oversold
+### E - Contrarian Oversold
 **Criteria:** RSI < 40 AND Analyst upside > 30% AND Quality ≥ 40th pct AND Composite ≥ 35
 
 Targets temporarily beaten-down stocks where analyst consensus diverges from recent price action. Mean-reversion play with quality filter to avoid value traps.
@@ -100,7 +100,7 @@ Targets temporarily beaten-down stocks where analyst consensus diverges from rec
 
 4. **Analyst upside is a useful contrarian signal.** Stocks with high analyst upside but negative 3M returns (Strategy E) historically mean-revert faster than the broader market.
 
-5. **Non-equity assets (Crypto, ETF) require separate scoring.** Fundamental factors are undefined for these asset classes — applying the equity composite score to them produces meaningless results.
+5. **Non-equity assets (Crypto, ETF) require separate scoring.** Fundamental factors are undefined for these asset classes - applying the equity composite score to them produces meaningless results.
 
 ---
 
