@@ -5,17 +5,17 @@
 
 ## 1. Objective
 
-Build a fair, bias-free composite scoring model to rank 451 global assets and filter equities into 5 actionable investment strategies. The original `composite_score` was heavily biased toward momentum - this report documents the redesigned model and its validation.
+Build a fair, bias-free composite scoring model to rank 451 global assets and filter equities into 5 actionable investment strategies. The original `composite_score` was heavily biased toward momentum - this report documents the redesigned model and its validation
 
 ---
 
 ## 2. Composite Score Design
 
 ### Problem with the original score
-The original `composite_score` had a strong momentum bias. High-momentum stocks dominated the rankings regardless of valuation or quality, making the score unsuitable for multi-factor portfolio construction.
+The original `composite_score` had a strong momentum bias. High-momentum stocks dominated the rankings regardless of valuation or quality, making the score unsuitable for multi-factor portfolio construction
 
 ### Solution: Percentile ranking before weighting
-All metrics are normalized via **percentile rank (0–100)** before weighted averaging. This eliminates scale differences between factors (e.g., P/E in the range 5–500 vs. ROE in 0–1).
+All metrics are normalized via **percentile rank (0–100)** before weighted averaging. This eliminates scale differences between factors (e.g., P/E in the range 5–500 vs. ROE in 0–1)
 
 | Factor | Weight | Sub-components |
 |--------|--------|----------------|
@@ -36,16 +36,16 @@ All metrics are normalized via **percentile rank (0–100)** before weighted ave
 
 ---
 
-## 3. Validation - Score vs. Return Correlation
+## 3. Validation - Score vs Return Correlation
 
 The redesigned composite score was validated against realized 1-year returns:
 
 - **New composite score** correlation with `return_1y_pct`: higher than original
 - **Original composite score** correlation with `return_1y_pct`: lower (momentum-biased)
 
-The scatter plot (`composite_vs_return.png`) shows a positive trend line across all three equity asset classes (US_MEGA, US_MID, INTL), confirming the score has predictive signal.
+The scatter plot (`composite_vs_return.png`) shows a positive trend line across all three equity asset classes (US_MEGA, US_MID, INTL), confirming the score has predictive signal
 
-> **Key insight:** Stocks in the top quartile of composite score (≥ 65) had meaningfully higher average 1Y returns than stocks in the bottom quartile (≤ 35), validating the multi-factor approach over pure momentum.
+> **Key insight:** Stocks in the top quartile of composite score (≥ 65) had meaningfully higher average 1Y returns than stocks in the bottom quartile (≤ 35), validating the multi-factor approach over pure momentum
 
 ---
 
@@ -66,41 +66,41 @@ The sector heatmap (`sector_heatmap.png`) reveals:
 ### A - Quality Value (Buffett-style)
 **Criteria:** Quality Index ≥ 65th percentile AND Value Index ≥ 55th percentile AND Composite ≥ 45
 
-Targets high-quality businesses trading at a discount. Suitable for long-term, low-turnover portfolios. Historically outperforms in late-cycle and bear markets.
+Targets high-quality businesses trading at a discount. Suitable for long-term, low-turnover portfolios. Historically outperforms in late-cycle and bear markets
 
 ### B - Momentum Breakout
 **Criteria:** Momentum Index ≥ 70th percentile AND Technical score ≥ 3/5 AND Golden Cross = 1
 
-Targets stocks with strong price velocity confirmed by technical signals. Higher turnover strategy. Performs best in trending bull markets.
+Targets stocks with strong price velocity confirmed by technical signals. Higher turnover strategy. Performs best in trending bull markets
 
 ### C - GARP (Growth at a Reasonable Price)
 **Criteria:** Revenue growth > 10% AND Trailing P/E < 50 AND Quality ≥ 50th pct AND Momentum ≥ 40th pct
 
-Balances growth and valuation. Avoids both deep value traps and overpriced growth stocks.
+Balances growth and valuation. Avoids both deep value traps and overpriced growth stocks
 
 ### D - Dividend Stability
 **Criteria:** Dividend yield > 2% AND Annualized volatility < 30% AND P/E < 30 AND Quality ≥ 45th pct
 
-Targets income-generating stocks with sustainable payouts. Low volatility filter reduces drawdown risk.
+Targets income-generating stocks with sustainable payouts. Low volatility filter reduces drawdown risk
 
 ### E - Contrarian Oversold
 **Criteria:** RSI < 40 AND Analyst upside > 30% AND Quality ≥ 40th pct AND Composite ≥ 35
 
-Targets temporarily beaten-down stocks where analyst consensus diverges from recent price action. Mean-reversion play with quality filter to avoid value traps.
+Targets temporarily beaten-down stocks where analyst consensus diverges from recent price action. Mean-reversion play with quality filter to avoid value traps
 
 ---
 
 ## 6. Key Findings
 
-1. **Momentum is necessary but not sufficient.** The original score's momentum bias produced high scores for stocks that had already run up — the redesigned model adds valuation and quality guardrails.
+1. **Momentum is necessary but not sufficient.** The original score's momentum bias produced high scores for stocks that had already run up — the redesigned model adds valuation and quality guardrails
 
-2. **Sector matters more than individual stock selection for Momentum.** Technology and Communication Services dominate the top momentum rankings; sector allocation explains most of the variance.
+2. **Sector matters more than individual stock selection for Momentum.** Technology and Communication Services dominate the top momentum rankings; sector allocation explains most of the variance
 
-3. **Quality is the most stable factor.** Quality Index rankings are more persistent quarter-over-quarter than Momentum or Value, making it the most reliable signal for long-term holding.
+3. **Quality is the most stable factor.** Quality Index rankings are more persistent quarter-over-quarter than Momentum or Value, making it the most reliable signal for long-term holding
 
-4. **Analyst upside is a useful contrarian signal.** Stocks with high analyst upside but negative 3M returns (Strategy E) historically mean-revert faster than the broader market.
+4. **Analyst upside is a useful contrarian signal.** Stocks with high analyst upside but negative 3M returns (Strategy E) historically mean-revert faster than the broader market
 
-5. **Non-equity assets (Crypto, ETF) require separate scoring.** Fundamental factors are undefined for these asset classes - applying the equity composite score to them produces meaningless results.
+5. **Non-equity assets (Crypto, ETF) require separate scoring.** Fundamental factors are undefined for these asset classes - applying the equity composite score to them produces meaningless results
 
 ---
 
