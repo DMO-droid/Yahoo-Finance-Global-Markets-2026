@@ -51,15 +51,5 @@ Analyze the Yahoo Finance 2026 dataset to build an Alpha Scoring model based on 
 
 ---
 
-# EDA & Data Cleaning
-Identify and address 7 key issues in the dataset
-
-| Key issue | Severity level |
-| :--- | :--- |
-| **Missing Values** | 🔴 Serious |
-| **OUTLIERS** | 🔴 Serious |
-| **Temporal Data Standardization** | 🟠 Important |
-| **Mix Currencies** | 🟠 Important |
-| **Identification of Leveraged & Extreme Returns** | 🟡 Moderate |
-| **NON-EQUITY no sector** | 🟠 Important |
-| **Extremely Negative Profit Margins & Invalid ROE** | 🟠 Important |
+## Process
+EDA --> Technical Analysis --> Screener
