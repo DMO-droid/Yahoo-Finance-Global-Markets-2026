@@ -3,6 +3,16 @@
 
 ## Data Cleaning Strategy - 7 Key Issues Addressed
 
+| Key issue | Severity level |
+| :--- | :--- |
+| **Missing Values** | 🔴 Serious |
+| **OUTLIERS** | 🔴 Serious |
+| **Temporal Data Standardization** | 🟠 Important |
+| **Mix Currencies** | 🟠 Important |
+| **Identification of Leveraged & Extreme Returns** | 🟡 Moderate |
+| **NON-EQUITY no sector** | 🟠 Important |
+| **Extremely Negative Profit Margins & Invalid ROE** | 🟠 Important |
+
 1. **Structural Missing Values Management**
    * **Observation:** Approximately 45–68% null values were found in fundamental columns such as PE, ROE, and Debt-to-Equity
    * **Root Cause:** The dataset aggregates diverse asset classes (Crypto, Forex, Commodities) that do not possess corporate financial metrics
@@ -37,13 +47,4 @@
    * **Observation:** Anomalies like negative equity (from heavy buybacks) or extreme losses were identified
    * **Solution:** Engineered a flag_extreme_margins feature to identify companies with profit margins < -50% or ROE > 200%, allowing for easy risk-filtering in investment strategies
 
----
-
-## 📊 Dashboard Insights & Results
-The finalized EDA resulted in a high-performance Investment Screener Dashboard:
-
-1. Rating Distribution: The market sentiment appears bearish/cautious, with Sell (90) and Hold (75) ratings dominating the landscape
-2. Composite Score vs. Return: A strong positive correlation ($r = 0.67$) was established between the engineered Composite Score and 1-year returns
-3. Sector Strength: Heatmap analysis indicates that Energy and Basic Materials currently hold the highest Momentum and Composite scores
-4. Top 20 Picks: The "Top 20 Cổ phiếu" table
 
