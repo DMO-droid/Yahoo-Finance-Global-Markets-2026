@@ -52,4 +52,27 @@ Analyze the Yahoo Finance 2026 dataset to build an Alpha Scoring model based on 
 ---
 
 ## Process
-EDA --> Technical Analysis --> Screener
+**Phase 1: Data Engineering & EDA**
+* **Objective:** Clean and normalize a multi-asset dataset
+* **Key Technical Fixes:**
+  * **Structural Separation:** Segregated *df_equity* from non-equity assets to handle fundamental data gaps
+  * **Outlier Winsorization:** Clipped extreme values (PE, ROE) to maintain realistic statistical distributions
+  * **Standardization:** Converted date strings to datetime64 and normalized multi-currency pricing (USX to USD)
+  * **Risk Engineering:** Created flags for negative equity and extreme volatility
+
+**Phase 2: Technical Analysis & Momentum**
+* **Objective:** Automate technical screening using price action and momentum
+* **Methodology:**
+  * *Built a Composite Technical Score (0-100) based on RSI, MACD, Golden Cross, and Bollinger Bands*
+  * *Developed a Sector Momentum Ranking to identify leading market segments*
+* **Visual Output:** *technical_analysis_report.png*
+
+**Phase 3: Investment Screener & Composite Scoring**
+* **Objective:** Rebuild a balanced scoring system and filter optimized portfolios
+* **Innovation:** Replaced the original momentum-biased score with a Percentile-Ranked Composite Score (40% Momentum, 30% Value, 20% Quality, 10% Technical)
+* **Strategic Buckets:**
+  * **Quality Value:** High-quality businesses at a discount
+  * **Momentum Breakout:** Trend-following with technical confirmation
+  * **GARP:** Growth at a Reasonable Price
+  * **Dividend Stability & Contrarian Oversold**
+*  **Visual Output:** *screener_report.png*
