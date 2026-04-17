@@ -1,9 +1,9 @@
 # Exploratory Data Analysis Report
 ## Yahoo Finance Global Markets 2026
 
-> **Dataset:** 451 tickers · 131 columns · April 2025 – April 2026  
+> **Dataset:** 451 tickers · 131 columns · April 2025 - April 2026  
 > **Scope:** 8 asset classes - US Equities, International Equities, ETFs, Crypto, Forex, Commodities, Indices, REITs  
-> **Objective:** Transform raw, heterogeneous financial data into a clean, analysis-ready "Gold Standard" dataset for quantitative modelling and dashboard visualisation.
+> **Objective:** Transform raw, heterogeneous financial data into a clean, analysis-ready "Gold Standard" dataset for quantitative modelling and dashboard visualisation
 
 ---
 
@@ -34,7 +34,7 @@
 | License | CC0 (Public Domain) |
 | Base Currency | USD (post-normalisation) |
 
-The dataset intentionally spans multiple asset classes to support a cross-market Alpha Scoring model. This heterogeneity is the primary driver of data quality challenges addressed below.
+The dataset intentionally spans multiple asset classes to support a cross-market Alpha Scoring model. This heterogeneity is the primary driver of data quality challenges addressed below
 
 ---
 
@@ -58,9 +58,9 @@ Seven distinct data quality issues were identified and prioritised by severity:
 
 ### 3.1 Structural Missing Values - 🔴 Critical
 
-**Observation:** Fundamental columns (`trailingPE`, `returnOnEquity`, `debtToEquity`, `priceToBook`) exhibited 45–68% null rates across the full dataset.
+**Observation:** Fundamental columns (`trailingPE`, `returnOnEquity`, `debtToEquity`, `priceToBook`) exhibited 45–68% null rates across the full dataset
 
-**Root Cause:** The dataset mixes asset classes. Crypto, Forex, Commodities, and Indices have no corporate balance sheets, so fundamental metrics are structurally absent - not data errors.
+**Root Cause:** The dataset mixes asset classes. Crypto, Forex, Commodities, and Indices have no corporate balance sheets, so fundamental metrics are structurally absent - not data errors
 
 **Resolution:**
 
@@ -70,10 +70,10 @@ df_nonequity  = df[~df.index.isin(df_equity.index)]
 ```
 
 The dataset was partitioned into two sub-frames:
-- **`df_equity`** - stocks and REITs with valid fundamental data; missing values imputed using sector medians.
-- **`df_nonequity`** - ETFs, Crypto, Forex, Commodities, Indices; fundamental columns intentionally left null.
+- **`df_equity`** - stocks and REITs with valid fundamental data; missing values imputed using sector medians
+- **`df_nonequity`** - ETFs, Crypto, Forex, Commodities, Indices; fundamental columns intentionally left null
 
-> This partition is the foundational step. All subsequent fundamental analysis operates exclusively on `df_equity`.
+> This partition is the foundational step. All subsequent fundamental analysis operates exclusively on `df_equity`
 
 ---
 
@@ -84,7 +84,7 @@ The dataset was partitioned into two sub-frames:
 - `priceToBook` turning deeply negative (firms with negative book equity)
 - `returnOnEquity` exceeding 500% (aggressive buyback distortion)
 
-**Approach:** Values were **clipped** (winsorised), not deleted. Deletion would discard valid price and return data attached to the same row.
+**Approach:** Values were **clipped** (winsorised), not deleted. Deletion would discard valid price and return data attached to the same row
 
 | Column | Lower Bound | Upper Bound | Rationale |
 |---|---|---|---|
@@ -102,7 +102,7 @@ df_equity['returnOnEquity'] = df_equity['returnOnEquity'].clip(-2, 5)
 
 ### 3.3 Temporal Standardisation - 🟠 High
 
-**Observation:** Date columns were stored as plain strings in `DD/MM/YYYY` format, preventing time-series operations, period filtering, and chronological sorting.
+**Observation:** Date columns were stored as plain strings in `DD/MM/YYYY` format, preventing time-series operations, period filtering, and chronological sorting
 
 **Resolution:**
 
@@ -111,7 +111,7 @@ df['date'] = pd.to_datetime(df['date'], format='%d/%m/%Y')
 # dtype: datetime64[ns]
 ```
 
-All date fields were converted to `datetime64[ns]`, enabling `.resample()`, `.dt.year`, and date-range slicing throughout the pipeline.
+All date fields were converted to `datetime64[ns]`, enabling `.resample()`, `.dt.year`, and date-range slicing throughout the pipeline
 
 ---
 
@@ -127,16 +127,16 @@ All date fields were converted to `datetime64[ns]`, enabling `.resample()`, `.dt
 | USX (US Cents) | Some US-listed instruments | 100× scale vs USD |
 
 **Resolution:**
-- **USX → USD:** Divided by 100 where `currency == 'USX'`.
-- **Non-USD assets:** Flagged with `flag_non_usd = True` to prevent invalid cross-currency price comparisons.
+- **USX → USD:** Divided by 100 where `currency == 'USX'`
+- **Non-USD assets:** Flagged with `flag_non_usd = True` to prevent invalid cross-currency price comparisons
 
-> Direct price comparisons across currencies are disabled by design. All cross-market comparisons use percentage returns or USD-denominated market capitalisation.
+> Direct price comparisons across currencies are disabled by design. All cross-market comparisons use percentage returns or USD-denominated market capitalisation
 
 ---
 
 ### 3.5 Leveraged & Extreme-Return Flagging - 🟡 Moderate
 
-**Observation:** A subset of assets - primarily leveraged ETFs (2×/3× products) and Crypto — exhibited 1-year returns exceeding ±100%, distorting return distribution analysis.
+**Observation:** A subset of assets - primarily leveraged ETFs (2×/3× products) and Crypto — exhibited 1-year returns exceeding ±100%, distorting return distribution analysis
 
 **Resolution:** A binary flag was engineered rather than removing these assets:
 
@@ -147,13 +147,13 @@ df['flag_leveraged_or_extreme'] = (
 ).astype(int)
 ```
 
-This preserves the full dataset while allowing analysts to exclude these instruments from standard return distribution studies with a single filter.
+This preserves the full dataset while allowing analysts to exclude these instruments from standard return distribution studies with a single filter
 
 ---
 
 ### 3.6 Non-Equity Sector Classification - 🟠 High
 
-**Observation:** Indices and Commodities lacked `sector` values, causing null groupings in sector-level dashboard visualisations.
+**Observation:** Indices and Commodities lacked `sector` values, causing null groupings in sector-level dashboard visualisations
 
 **Resolution:** Sector labels were mapped directly from `asset_class` for non-equity instruments:
 
@@ -168,7 +168,7 @@ sector_map = {
 df.loc[df['sector'].isna(), 'sector'] = df['asset_class'].map(sector_map)
 ```
 
-This ensures complete sector coverage for all 451 tickers in dashboard groupings.
+This ensures complete sector coverage for all 451 tickers in dashboard groupings
 
 ---
 
@@ -187,7 +187,7 @@ df_equity['flag_extreme_margins'] = (
 ).astype(int)
 ```
 
-This flag enables risk-based filtering in downstream investment strategies without discarding the underlying data.
+This flag enables risk-based filtering in downstream investment strategies without discarding the underlying data
 
 ---
 
@@ -201,7 +201,7 @@ The cleaning process produced three binary risk flags appended to the dataset:
 | `flag_leveraged_or_extreme` | Binary (0/1) | Leveraged product or return exceeding ±100% |
 | `flag_extreme_margins` | Binary (0/1) | Profit margin < -50% or ROE > 200% |
 
-These flags serve as first-class filter inputs for all downstream screener and scoring modules.
+These flags serve as first-class filter inputs for all downstream screener and scoring modules
 
 ---
 
@@ -217,5 +217,5 @@ These flags serve as first-class filter inputs for all downstream screener and s
 
 ---
 
-*Report generated as part of the Yahoo Finance Global Markets 2026 quantitative pipeline.*  
+*Report generated as part of the Yahoo Finance Global Markets 2026 quantitative pipeline*  
 *Pipeline stack: Python · Pandas · NumPy*
