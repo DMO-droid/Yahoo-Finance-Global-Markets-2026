@@ -2,7 +2,7 @@
 ## Yahoo Finance Global Markets 2026
 
 > **Dataset:** 451 tickers · 131 columns · April 2025 – April 2026  
-> **Scope:** 8 asset classes — US Equities, International Equities, ETFs, Crypto, Forex, Commodities, Indices, REITs  
+> **Scope:** 8 asset classes - US Equities, International Equities, ETFs, Crypto, Forex, Commodities, Indices, REITs  
 > **Objective:** Transform raw, heterogeneous financial data into a clean, analysis-ready "Gold Standard" dataset for quantitative modelling and dashboard visualisation.
 
 ---
@@ -56,11 +56,11 @@ Seven distinct data quality issues were identified and prioritised by severity:
 
 ## 3. Cleaning Methodology
 
-### 3.1 Structural Missing Values — 🔴 Critical
+### 3.1 Structural Missing Values - 🔴 Critical
 
 **Observation:** Fundamental columns (`trailingPE`, `returnOnEquity`, `debtToEquity`, `priceToBook`) exhibited 45–68% null rates across the full dataset.
 
-**Root Cause:** The dataset mixes asset classes. Crypto, Forex, Commodities, and Indices have no corporate balance sheets, so fundamental metrics are structurally absent — not data errors.
+**Root Cause:** The dataset mixes asset classes. Crypto, Forex, Commodities, and Indices have no corporate balance sheets, so fundamental metrics are structurally absent - not data errors.
 
 **Resolution:**
 
@@ -70,14 +70,14 @@ df_nonequity  = df[~df.index.isin(df_equity.index)]
 ```
 
 The dataset was partitioned into two sub-frames:
-- **`df_equity`** — stocks and REITs with valid fundamental data; missing values imputed using sector medians.
-- **`df_nonequity`** — ETFs, Crypto, Forex, Commodities, Indices; fundamental columns intentionally left null.
+- **`df_equity`** - stocks and REITs with valid fundamental data; missing values imputed using sector medians.
+- **`df_nonequity`** - ETFs, Crypto, Forex, Commodities, Indices; fundamental columns intentionally left null.
 
 > This partition is the foundational step. All subsequent fundamental analysis operates exclusively on `df_equity`.
 
 ---
 
-### 3.2 Outlier Treatment via Economic Winsorisation — 🔴 Critical
+### 3.2 Outlier Treatment via Economic Winsorisation - 🔴 Critical
 
 **Observation:** Extreme ratio values were detected across key valuation metrics:
 - `trailingPE` reaching values above 3,000 (loss-making firms with minimal earnings)
@@ -100,7 +100,7 @@ df_equity['returnOnEquity'] = df_equity['returnOnEquity'].clip(-2, 5)
 
 ---
 
-### 3.3 Temporal Standardisation — 🟠 High
+### 3.3 Temporal Standardisation - 🟠 High
 
 **Observation:** Date columns were stored as plain strings in `DD/MM/YYYY` format, preventing time-series operations, period filtering, and chronological sorting.
 
@@ -134,9 +134,9 @@ All date fields were converted to `datetime64[ns]`, enabling `.resample()`, `.dt
 
 ---
 
-### 3.5 Leveraged & Extreme-Return Flagging — 🟡 Moderate
+### 3.5 Leveraged & Extreme-Return Flagging - 🟡 Moderate
 
-**Observation:** A subset of assets — primarily leveraged ETFs (2×/3× products) and Crypto — exhibited 1-year returns exceeding ±100%, distorting return distribution analysis.
+**Observation:** A subset of assets - primarily leveraged ETFs (2×/3× products) and Crypto — exhibited 1-year returns exceeding ±100%, distorting return distribution analysis.
 
 **Resolution:** A binary flag was engineered rather than removing these assets:
 
@@ -151,7 +151,7 @@ This preserves the full dataset while allowing analysts to exclude these instrum
 
 ---
 
-### 3.6 Non-Equity Sector Classification — 🟠 High
+### 3.6 Non-Equity Sector Classification - 🟠 High
 
 **Observation:** Indices and Commodities lacked `sector` values, causing null groupings in sector-level dashboard visualisations.
 
@@ -172,11 +172,11 @@ This ensures complete sector coverage for all 451 tickers in dashboard groupings
 
 ---
 
-### 3.7 Extreme Margin & Invalid ROE Flagging — 🟠 High
+### 3.7 Extreme Margin & Invalid ROE Flagging - 🟠 High
 
 **Observation:** Certain equities showed anomalous profitability metrics:
-- **Profit margin < −50%:** Deep operating losses (distressed firms, early-stage biotech)
-- **ROE > 200%:** Mathematically valid but economically misleading — typically caused by near-zero or negative book equity from aggressive share buybacks (e.g., mature consumer staples)
+- **Profit margin < -50%:** Deep operating losses (distressed firms, early-stage biotech)
+- **ROE > 200%:** Mathematically valid but economically misleading - typically caused by near-zero or negative book equity from aggressive share buybacks (e.g., mature consumer staples)
 
 **Resolution:**
 
@@ -199,7 +199,7 @@ The cleaning process produced three binary risk flags appended to the dataset:
 |---|---|---|
 | `flag_non_usd` | Binary (0/1) | Asset priced in a non-USD currency |
 | `flag_leveraged_or_extreme` | Binary (0/1) | Leveraged product or return exceeding ±100% |
-| `flag_extreme_margins` | Binary (0/1) | Profit margin < −50% or ROE > 200% |
+| `flag_extreme_margins` | Binary (0/1) | Profit margin < -50% or ROE > 200% |
 
 These flags serve as first-class filter inputs for all downstream screener and scoring modules.
 
