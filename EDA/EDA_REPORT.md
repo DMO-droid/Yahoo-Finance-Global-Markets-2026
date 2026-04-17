@@ -44,7 +44,7 @@ Seven distinct data quality issues were identified and prioritised by severity:
 
 | # | Issue | Severity | Root Cause |
 |---|---|---|---|
-| 1 | Structural Missing Values | 🔴 Critical | Mixed asset classes — non-equities lack corporate fundamentals |
+| 1 | Structural Missing Values | 🔴 Critical | Mixed asset classes - non-equities lack corporate fundamentals |
 | 2 | Statistical Outliers | 🔴 Critical | Extreme ratios from distressed/high-growth firms |
 | 3 | Temporal Inconsistency | 🟠 High | Dates stored as strings in `DD/MM/YYYY` format |
 | 4 | Multi-Currency Pricing | 🟠 High | Assets priced in KRW, JPY, INR, USX alongside USD |
@@ -58,7 +58,7 @@ Seven distinct data quality issues were identified and prioritised by severity:
 
 ### 3.1 Structural Missing Values - 🔴 Critical
 
-**Observation:** Fundamental columns (`trailingPE`, `returnOnEquity`, `debtToEquity`, `priceToBook`) exhibited 45–68% null rates across the full dataset
+**Observation:** Fundamental columns (`trailingPE`, `returnOnEquity`, `debtToEquity`, `priceToBook`) exhibited 45-68% null rates across the full dataset
 
 **Root Cause:** The dataset mixes asset classes. Crypto, Forex, Commodities, and Indices have no corporate balance sheets, so fundamental metrics are structurally absent - not data errors
 
