@@ -47,7 +47,3 @@ The finalized EDA resulted in a high-performance Investment Screener Dashboard:
 3. Sector Strength: Heatmap analysis indicates that Energy and Basic Materials currently hold the highest Momentum and Composite scores
 4. Top 20 Picks: The "Top 20 Cổ phiếu" table
 
-<p align="center" width="100%">
-<img src="./images/EDA_report.png" alt="EDA report" style="width: 70%; min-width: 300px; display: block; margin: auto;">
-</p>
-
